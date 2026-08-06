@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dify 产品演进与技术选型对比</title>
+    <style>
+        :root{
+            --bg:#0f1222;--bg2:#161a33;--fg:#e8ecf8;--muted:#8a93b8;
+            --accent:#7c5cff;--accent2:#22d3ee;--good:#34d399;--warn:#fbbf24;--bad:#f87171;
+            --card:#1c2140;--border:#2a3060;
+        }
+        *{box-sizing:border-box}
+        html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;line-height:1.6}
+        body{min-height:100vh}
+        main{max-width:1180px;margin:0 auto;padding:48px 32px 120px}
+        header.page{text-align:center;margin-bottom:56px}
+        header.page h1{font-size:44px;margin:0 0 12px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+        header.page p{color:var(--muted);font-size:16px;margin:0}
+        h2{font-size:28px;margin:48px 0 20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+        h2 .tag{font-size:13px;color:var(--accent2);margin-right:10px;font-weight:600;letter-spacing:1px}
+        h3{font-size:20px;margin:24px 0 12px}
+        p{margin:10px 0}
+        .muted{color:var(--muted)}
+
+        /* Cards */
+        .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin:16px 0;transition:transform .2s,border-color .2s}
+        .card:hover{transform:translateY(-2px);border-color:var(--accent)}
+        .card .ver{display:inline-block;padding:4px 12px;border-radius:20px;background:linear-gradient(135deg,var(--accent),#a855f7);font-size:13px;font-weight:700;color:#fff}
+        .card .date{color:var(--muted);font-size:13px;margin-left:10px}
+        .card h3{margin:14px 0 8px}
+        .card .desc{color:var(--muted);font-size:14px;margin-bottom:14px}
+        .feat-list{list-style:none;padding:0;margin:0}
+        .feat-list li{padding:10px 14px;background:rgba(124,92,255,.1);border-left:3px solid var(--accent);border-radius:6px;margin:6px 0;font-size:14px}
+        .feat-list li b{color:var(--accent2)}
+
+        /* Timeline */
+        .timeline{position:relative;padding-left:32px;margin:24px 0}
+        .timeline::before{content:"";position:absolute;left:11px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent),var(--accent2))}
+        .tl-item{position:relative;margin:20px 0}
+        .tl-item::before{content:"";position:absolute;left:-27px;top:18px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(124,92,255,.6)}
+        .tl-item:nth-child(even)::before{background:var(--accent2);box-shadow:0 0 12px rgba(34,211,238,.6)}
+
+        /* Table */
+        table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+        th,td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--border)}
+        th{background:rgba(124,92,255,.15);color:var(--accent2);font-weight:600;font-size:13px;letter-spacing:.5px}
+        td{color:var(--fg)}
+        tr:hover td{background:rgba(124,92,255,.05)}
+        .dim{color:var(--muted)}
+        .good{color:var(--good);font-weight:600}
+        .bad{color:var(--bad)}
+        .warn{color:var(--warn)}
+
+        /* Compare Grid */
+        .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+        .compare-grid .card{margin:0}
+        .col-dify{border-top:3px solid var(--accent)}
+        .col-agent{border-top:3px solid var(--good)}
+        .col-title{font-size:16px;font-weight:700;margin-bottom:10px}
+        .col-title.dify{color:var(--accent)}
+        .col-title.agent{color:var(--good)}
+
+        /* Badge */
+        .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+        .badge.new{background:rgba(52,211,153,.15);color:var(--good)}
+        .badge.core{background:rgba(124,92,255,.15);color:var(--accent)}
+        .badge.enterprise{background:rgba(251,191,36,.15);color:var(--warn)}
+
+        /* Flow */
+        .flow{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0;justify-content:center}
+        .flow .node{padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--fg)}
+        .flow .node.arrow{background:none;border:none;color:var(--accent);font-size:20px;padding:0 4px}
+
+        /* Stat */
+        .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:24px 0}
+        .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+        .stat .num{font-size:32px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+        .stat .label{color:var(--muted);font-size:13px;margin-top:4px}
+
+        /* Pro / Con */
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+        .pro-col .card{border-left:4px solid var(--good)}
+        .con-col .card{border-left:4px solid var(--bad)}
+        .pro-col h3{color:var(--good)}
+        .con-col h3{color:var(--bad)}
+
+        /* Layer Browser (tabs / carousel) */
+        .layer-browser{margin:16px 0}
+        .layer-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+        .layer-tab{padding:8px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;transition:border-color .2s,color .2s,background .2s}
+        .layer-tab:hover{border-color:var(--accent);color:var(--fg)}
+        .layer-tab.active{background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff;border-color:transparent}
+        .layer-panel{display:none}
+        .layer-panel.active{display:block;animation:fadeIn .25s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+        .layer-panel .card{margin-top:0}
+        .layer-hint{color:var(--muted);font-size:12px;margin:0 0 4px}
+
+        /* Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(8,10,24,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+        .modal-overlay.open{display:flex}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:640px;width:100%;max-height:82vh;overflow-y:auto;padding:28px;position:relative;animation:modalIn .25s ease}
+        @keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+        .modal h3{margin:0 0 6px;font-size:22px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+        .modal .m-sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+        .modal .m-sec{font-size:13px;color:var(--accent2);font-weight:700;margin:18px 0 8px;letter-spacing:.5px}
+        .modal ul{margin:0;padding-left:18px}
+        .modal ul li{margin:4px 0;font-size:14px}
+        .modal p{font-size:14px}
+        .modal .m-code{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;white-space:pre;overflow-x:auto;color:var(--fg);line-height:1.7}
+        .modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+        .modal-close:hover{color:var(--fg)}
+        .detail-btn{padding:5px 12px;border-radius:16px;border:1px solid var(--accent);background:rgba(124,92,255,.12);color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+        .detail-btn:hover{background:var(--accent);color:#fff}
+
+        /* Vertical Flow */
+        .v-flow{display:flex;flex-direction:column;margin:8px 0}
+        .v-step{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:14px;line-height:1.5}
+        .v-step b{color:var(--accent2);white-space:nowrap}
+        .v-arrow{color:var(--accent);text-align:center;font-size:13px;line-height:1;padding:3px 0}
+
+        /* ===== Architecture Diagram (接口架构总览) ===== */
+        .arch{display:flex;flex-direction:column;gap:6px;align-items:center;margin:24px 0}
+        .arch-label{font-size:13px;color:var(--accent2);font-weight:700;letter-spacing:1px;text-align:center;margin:14px 0 4px}
+        .arch-label.first{margin-top:0}
+        .arch-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;width:100%}
+        .arch-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:112px;transition:.2s}
+        .arch-box:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .arch-box .ab-name{font-weight:700;font-size:15px}
+        .arch-box .ab-path{color:var(--muted);font-size:11px;font-family:Consolas,monospace;margin-top:2px}
+        .arch-box .ab-role{color:var(--muted);font-size:12px;margin-top:2px}
+        .arch-box.user{border-top:3px solid var(--accent2)}
+        .arch-box.admin{border-top:3px solid var(--accent)}
+        .arch-box.dev{border-top:3px solid var(--good)}
+        .arch-box.aux{border-top:3px solid var(--warn)}
+        .arch-arrow{color:var(--accent);font-size:20px;text-align:center;line-height:1;margin:6px 0 2px}
+        .arch-arrow .t{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+        .gen-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:8px 0 4px}
+        .gstep{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;min-width:118px;font-size:13px}
+        .gstep .n{display:inline-block;width:20px;height:20px;line-height:20px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff;font-size:11px;font-weight:700;margin-bottom:4px}
+        .gstep .t{display:block;font-weight:700;margin-top:4px}
+        .gstep .d{display:block;color:var(--muted);font-size:11px;margin-top:2px;line-height:1.5}
+        .gstep.hl{border-color:var(--accent);background:rgba(124,92,255,.12)}
+        .gstep.hl .n{background:linear-gradient(135deg,var(--accent2),var(--accent))}
+        .garrow{color:var(--accent);font-size:18px}
+        .arch-note{color:var(--muted);font-size:12px;text-align:center;margin:10px 0 0}
+
+        /* ===== Full Map (全景大图) ===== */
+        .arch-wide{width:100%}
+        .arch-sec{display:flex;align-items:center;gap:10px;margin:22px 0 10px;width:100%}
+        .arch-sec .num{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff;font-size:13px;font-weight:700;padding:0 8px}
+        .arch-sec .t{font-weight:700;font-size:15px;color:var(--fg)}
+        .arch-sec .d{color:var(--muted);font-size:12px}
+        .arch-big-arrow{color:var(--accent);font-size:20px;text-align:center;line-height:1;margin:8px 0 0}
+        .api-chip{display:inline-block;padding:4px 11px;border-radius:14px;font-size:11px;font-weight:600;margin:3px 5px 3px 0;background:rgba(124,92,255,.12);color:var(--accent2);border:1px solid var(--border)}
+        .api-chip.done{background:rgba(52,211,153,.12);color:var(--good)}
+        .api-chip .m{color:var(--muted);font-weight:400}
+
+        /* Responsive */
+        @media(max-width:768px){
+            header.page h1{font-size:30px}
+            .compare-grid,.two-col{grid-template-columns:1fr}
+            table{font-size:12px}
+            th,td{padding:10px 8px}
+        }
+
+        /* Print */
+        @media print{
+            body{background:#fff;color:#1a1a1a}
+            .card{background:#f8f9fa;border-color:#e0e0e0}
+            th{background:#f0f0f0}
+        }
+    </style>
+</head>
+<body>
+<main>
+
+    <!-- ============ 封面 ============ -->
+    <header class="page">
+        <h1>Dify 产品演进与技术对比</h1>
+    </header>
+
+    <!-- ============ 01. Dify 概览 ============ -->
+    <section>
+        <h2><span class="tag">01</span>Dify 是什么</h2>
+        <div class="card">
+            <h3>🎯 产品定位</h3>
+            <p>Dify 是一款开源的 LLM 应用开发平台，提供从 <b>工作流编排</b>、<b>聊天机器人</b>、<b>RAG 知识库</b> 到 <b>Agent 智能体</b> 的全链路能力。面向企业用户，强调开箱即用、可视化、低代码协作。</p>
+            <div class="flow">
+                <span class="node">Workflow 工作流</span><span class="node arrow">→</span>
+                <span class="node">Chatbot 对话</span><span class="node arrow">→</span>
+                <span class="node">Agent 智能体</span><span class="node arrow">→</span>
+                <span class="node">Knowledge 知识库</span><span class="node arrow">→</span>
+                <span class="node">Plugin 插件生态</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ 02. 版本时间线 ============ -->
+    <section>
+        <h2><span class="tag">02</span>版本演进时间线</h2>
+        <p class="muted">从 2025 年 2 月首版至今，Dify 以平均 1.5 个月一次的节奏快速迭代，持续补齐生产级能力。</p>
+
+        <div class="timeline">
+
+            <!-- v1.0.0 -->
+            <div class="tl-item">
+                <div class="card">
+                    <span class="ver">v1.0.0</span><span class="date">2025-02-28</span>
+                    <span class="badge core">核心架构</span>
+                    <h3>🚀 插件系统与 Agent 节点</h3>
+                    <p class="desc">奠定 Dify 生态基础，实现工具/模型即插即用，Workflow 可通过 Agent 节点编排复杂智能体。</p>
+                    <ul class="feat-list">
+                        <li><b>Plugin System</b> — 引入 .difypkg 插件格式，支持工具、模型扩展</li>
+                        <li><b>Plugin-based Tool & Model</b> — 工具与模型全面解耦，统一插件化管理</li>
+                        <li><b>Agent Node</b> — Workflow 新增 Agent 节点，插件可定义 Agent 策略</li>
+                        <li><b>Extension Plugin</b> — 托管自定义服务，处理 Webhook 等外部事件</li>
+                        <li><b>Dify Marketplace</b> — 官方插件市场上线，支持发布/共享/下载</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- v1.5.0 -->
+            <div class="tl-item">
+                <div class="card">
+                    <span class="ver">v1.5.0</span><span class="date">2025-06-25</span>
+                    <span class="badge new">调试增强</span>
+                    <h3>🔍 Workflow 调试体验升级</h3>
+                    <p class="desc">面向开发者的调试大版本，让复杂工作流的排查效率大幅提升。</p>
+                    <ul class="feat-list">
+                        <li><b>Enhanced Workflow Debugging</b> — 更直观的调试界面、持久化调试变量、Dashboard 集成</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- v1.6.0 -->
+            <div class="tl-item">
+                <div class="card">
+                    <span class="ver">v1.6.0</span><span class="date">2025-07-10</span>
+                    <span class="badge core">协议标准</span>
+                    <h3>🔌 MCP 协议原生支持</h3>
+                    <p class="desc">紧跟 Anthropic 推出的 Model Context Protocol，成为最早支持 MCP 的主流平台之一。</p>
+                    <ul class="feat-list">
+                        <li><b>MCP Support</b> — 统一模型与工具的交互方式，打通 Agent 与外部工具的协议标准</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- v1.9.0 -->
+            <div class="tl-item">
+                <div class="card">
+                    <span class="ver">v1.9.0</span><span class="date">2025-09-22</span>
+                    <span class="badge new">知识与引擎</span>
+                    <h3>📚 知识流水线 + 队列化执行引擎</h3>
+                    <p class="desc">同时升级 RAG 知识处理和底层 Workflow 引擎，支撑大规模生产场景。</p>
+                    <ul class="feat-list">
+                        <li><b>Knowledge Pipeline</b> — 模块化知识处理流水线，支持导入→处理→索引全流程</li>
+                        <li><b>Queue-based Graph Engine</b> — 基于队列的图执行引擎，提升稳定性、可控性和执行效率</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- v1.10.0 -->
+            <div class="tl-item">
+                <div class="card">
+                    <span class="ver">v1.10.0</span><span class="date">2025-11-13</span>
+                    <span class="badge new">自动化</span>
+                    <h3>⏰ Trigger 触发器</h3>
+                    <p class="desc">Workflow 从被动执行走向主动调度，支持定时与事件双驱动。</p>
+                    <ul class="feat-list">
+                        <li><b>Trigger Functionality</b> — 新增触发器节点，支持定时任务和事件驱动 Workflow</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- v1.13.0 -->
+            <div class="tl-item">
+                <div class="card">
+                    <span class="ver">v1.13.0</span><span class="date">2026-02-11</span>
+                    <span class="badge enterprise">企业级</span>
+                    <h3>👤 Human-in-the-Loop 人机协同</h3>
+                    <p class="desc">补齐企业审批场景，AI 与人工协同工作流完整落地。</p>
+                    <ul class="feat-list">
+                        <li><b>Human Input 节点</b> — AI 与人工协同的关键节点</li>
+                        <li><b>Native Workflow Pausing</b> — 关键节点暂停，等待人工介入</li>
+                        <li><b>Review & Edit</b> — 审核 AI 输出、修改变量后继续执行</li>
+                        <li><b>Action-Based Routing</b> — Approve/Reject/Escalate 决定后续路径</li>
+                        <li><b>Flexible Delivery</b> — WebApp 或 Email 发送给审批人员</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- v1.14.0 -->
+            <div class="tl-item">
+                <div class="card">
+                    <span class="ver">v1.14.0</span><span class="date">2026-04-29</span>
+                    <span class="badge enterprise">企业级</span>
+                    <h3>🤝 多人实时协作</h3>
+                    <p class="desc">面向团队的协同编辑能力，对标 Figma 协作体验。</p>
+                    <ul class="feat-list">
+                        <li><b>Collaboration</b> — 多人协同编辑 Workflow，实时同步、在线状态、共享编辑</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ============ 03. 源码架构剖析 ============ -->
+    <section>
+        <h2><span class="tag">03</span>源码架构剖析</h2>
+        <p class="muted">从源码出发，Dify 是一个四大系统组合的 Monorepo，后端严格分层、依赖单向向下。</p>
+
+        <div class="stats">
+            <div class="stat"><div class="num">4</div><div class="label">大系统</div></div>
+            <div class="stat"><div class="num">6</div><div class="label">后端源码分层</div></div>
+            <div class="stat"><div class="num">25</div><div class="label">Flask 扩展</div></div>
+            <div class="stat"><div class="num">60+</div><div class="label">后端 Service</div></div>
+        </div>
+
+        <h3>🏗️ 四大系统总览</h3>
+        <div class="flow">
+            <span class="node">主后端 api/（Flask）</span><span class="node arrow">+</span>
+            <span class="node">前端 web/（Next.js）</span><span class="node arrow">+</span>
+            <span class="node">Agent 服务 dify-agent/（FastAPI）</span><span class="node arrow">+</span>
+            <span class="node">配套工程 cli / e2e / docker</span>
+        </div>
+
+        <h3>🧭 逻辑架构七层（职责视角）</h3>
+        <div class="card">
+            <p class="desc">逻辑架构按<b>职责</b>抽象分层，回答"Dify 由哪些能力组成、每一层负责什么"，点击"详情"可查看示例流程与源码位置。</p>
+            <table>
+                <thead><tr><th>层</th><th>职责说明</th><th>说明</th></tr></thead>
+                <tbody>
+                <tr><td>① 交互层</td><td><b>前台接待</b> — 用户和 Dify 打交道的第一道门。网页、聊天窗口、App、API 的请求都从这里进来</td><td><button class="detail-btn" type="button" data-layer="1">详情</button></td></tr>
+                <tr><td>② 应用层</td><td><b>搭什么应用</b> — 决定你要创建哪种 AI 应用（聊天机器人 / 工作流 / 智能体），以及它的模型、提示词、变量等配置</td><td><button class="detail-btn" type="button" data-layer="2">详情</button></td></tr>
+                <tr><td>③ 编排层</td><td><b>执行导演</b> — 安排工作流"先做 A、再做 B、条件满足走 C"，决定每一步怎么走、结果怎么传给下一步</td><td><button class="detail-btn" type="button" data-layer="3">详情</button></td></tr>
+                <tr><td>④ AI 能力层</td><td><b>AI 技能库</b> — 给应用提供各种 AI 本领：记住上下文、查知识库、调用外部工具、让 Agent 自主决策</td><td><button class="detail-btn" type="button" data-layer="4">详情</button></td></tr>
+                <tr><td>⑤ 模型接入层</td><td><b>万能插座</b> — 屏蔽各家大模型的差异，应用统一调用，想换 GPT / Claude / 本地模型随时换</td><td><button class="detail-btn" type="button" data-layer="5">详情</button></td></tr>
+                <tr><td>⑥ 基础设施层</td><td><b>水电煤</b> — 保证系统能跑起来的底座：数据库存数据、缓存加速、任务队列跑异步、沙箱跑代码</td><td><button class="detail-btn" type="button" data-layer="6">详情</button></td></tr>
+                <tr><td>⑦ 外部服务层</td><td><b>对外窗口</b> — 替 Dify 联系外界：调用外部大模型 API、对接第三方工具、通过 MCP 接入外部服务</td><td><button class="detail-btn" type="button" data-layer="7">详情</button></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>💬 换个视角：从用户使用流程理解七层</h3>
+        <div class="card">
+            <p class="desc">上面的表格是"职责"视角；实际使用时，用户是<b>自顶向下</b>一层层进入的：</p>
+            <div class="v-flow">
+                <div class="v-step"><b>① 交互层</b> — 用户面对的就是这一层：打开网页、点按钮、发消息，所有操作从这里进入</div>
+                <div class="v-arrow">▼</div>
+                <div class="v-step"><b>② 应用层</b> — 在这里选择具体的 AI 应用：Chat 聊天、Workflow 工作流、Agent 智能体…</div>
+                <div class="v-arrow">▼</div>
+                <div class="v-step"><b>③ 编排层</b> — 选中某个应用后进入编排（以 Workflow 为例）：它是整个流程的<b>大脑</b>，安排"先干什么、后干什么"、节点之间怎么串联</div>
+                <div class="v-arrow">▼</div>
+                <div class="v-step"><b>④ AI 能力层</b> — 给大脑附加能力：接入 RAG 知识检索、加长短期记忆、挂外部工具</div>
+                <div class="v-arrow">▼</div>
+                <div class="v-step"><b>⑤ 模型接入层</b> — 大脑要工作还需要"会思考"：切换不同大模型厂家（GPT / Claude / 本地模型），这一层屏蔽差异，随时可换</div>
+                <div class="v-arrow">▼</div>
+                <div class="v-step"><b>⑥ 基础设施层</b> — 以上功能要跑起来离不开底座：数据存储、缓存加速、异步任务队列</div>
+                <div class="v-arrow">▼</div>
+                <div class="v-step"><b>⑦ 对外服务层</b> — 最后是对外接口：与外部大模型、第三方系统、MCP 服务打交道</div>
+            </div>
+        </div>
+        <p class="muted">💡 逻辑七层是<b>职责视角</b>，源码六层是<b>物理目录视角</b>：逻辑上的"AI 能力层"在源码里分散于 core/ 多个目录；"基础设施层"对应 extensions/ + tasks/。逻辑分层便于理解职责，源码分层便于定位代码，两者互补。</p>
+
+        <div class="card">
+            <h3>🔧 主后端 6 层结构（依赖单向向下）</h3>
+            <table>
+                <thead><tr><th>层</th><th>源码位置</th><th>职责说明</th></tr></thead>
+                <tbody>
+                <tr><td>① 启动层</td><td>app.py / app_factory.py<br>dify_app.py / extensions/</td><td><b>创建 App、装配进程</b> — 按序初始化各扩展（数据库 / Redis / Celery / 登录 / 存储 / OTel），挂载全局钩子</td></tr>
+                <tr><td>② 接入层</td><td>controllers/</td><td><b>路由分发</b> — 接收请求、解析参数、翻译异常，分 console（管理台）/ web（公开）/ service_api（BaaS）/ mcp（MCP 协议）四类入口</td></tr>
+                <tr><td>③ 业务层</td><td>services/</td><td><b>业务编排</b> — 跨领域协调，如 app_generate（按 AppMode 分发）、workflow、agent、dataset、conversation 等各类 Service</td></tr>
+                <tr><td>④ 领域层</td><td>core/</td><td><b>引擎核心</b> — 包含 app 运行框架、workflow 引擎、agent 引擎、rag 管道、tools 工具</td></tr>
+                <tr><td>⑤ 数据层</td><td>models / repositories / migrations</td><td><b>数据持久化</b> — ORM 模型（account / workflow / dataset / app / message 等表）、数据仓库、Alembic 迁移</td></tr>
+                <tr><td>⑥ 基础设施</td><td>libs / configs / events / tasks / contexts</td><td><b>通用支撑</b> — 加密 / JWT / 分页 / 邮件工具、集中配置、领域事件、Celery 任务</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>📁 各层明细（点击标签或 ←/→ 键切换）</h3>
+
+        <div class="layer-browser" id="layerBrowser">
+            <div class="layer-tabs">
+                <button class="layer-tab active" type="button">① 启动层</button>
+                <button class="layer-tab" type="button">② 接入层</button>
+                <button class="layer-tab" type="button">③ 业务层</button>
+                <button class="layer-tab" type="button">④ 领域层</button>
+                <button class="layer-tab" type="button">⑤ 数据层</button>
+                <button class="layer-tab" type="button">⑥ 基础设施</button>
+            </div>
+
+            <div class="layer-panels">
+
+                <div class="layer-panel active">
+                    <div class="card">
+                        <h3>① 启动层 — 开机流程</h3>
+                        <p class="desc">相当于后端的"开机流程"：先把数据库、缓存、异步任务等零件装好，系统才能对外服务。</p>
+                        <ul class="feat-list">
+                            <li><b>创建应用实例</b> — app.py 是进程入口</li>
+                            <li><b>初始化扩展</b> — 按顺序装配数据库、Redis、Celery、登录、邮件、存储等（app_factory.py）</li>
+                            <li><b>全局钩子</b> — 每个请求进来前的校验、离开时的日志</li>
+                            <li><b>部署配置</b> — 生产服务器（gunicorn）与 Celery worker 入口</li>
+                        </ul>
+                        <p class="layer-hint">📍 关键位置：api/app.py、api/app_factory.py、api/extensions/</p>
+                    </div>
+                </div>
+
+                <div class="layer-panel">
+                    <div class="card">
+                        <h3>② 接入层 — 前台总机</h3>
+                        <p class="desc">相当于"前台总机"：所有外部请求都打到这里，按类型转给不同处理窗口。</p>
+                        <ul class="feat-list">
+                            <li><b>管理台入口</b> — 画布编排、应用配置、监控（console/）</li>
+                            <li><b>公开应用入口</b> — 聊天、表单、文件上传（web/）</li>
+                            <li><b>第三方集成入口</b> — 给外部系统调用的密钥 API（service_api/）</li>
+                            <li><b>MCP 协议入口</b> — 对接外部 MCP 客户端</li>
+                            <li><b>公共装饰器</b> — 登录校验、权限校验、参数解析等（wraps.py）</li>
+                        </ul>
+                        <p class="layer-hint">📍 关键位置：api/controllers/</p>
+                    </div>
+                </div>
+
+                <div class="layer-panel">
+                    <div class="card">
+                        <h3>③ 业务层 — 部门经理</h3>
+                        <p class="desc">相当于"部门经理"：接到请求后，判断该调哪些底层能力，编排它们协同完成一件事。</p>
+                        <ul class="feat-list">
+                            <li><b>应用调度</b> — 按应用类型分发到聊天 / 工作流 / Agent 等生成器</li>
+                            <li><b>工作流管理</b> — 工作流定义、运行、恢复</li>
+                            <li><b>Agent 管理</b> — 智能体的配置与编排</li>
+                            <li><b>知识库管理</b> — 数据集、文档、知识处理</li>
+                            <li><b>对话与消息</b> — 会话、消息记录</li>
+                            <li><b>文件与配额</b> — 文件上传处理、配额计费</li>
+                        </ul>
+                        <p class="layer-hint">📍 关键位置：api/services/</p>
+                    </div>
+                </div>
+
+                <div class="layer-panel">
+                    <div class="card">
+                        <h3>④ 领域层 — 技术车间</h3>
+                        <p class="desc">相当于"技术车间"：Dify 最核心、最复杂的地方，各种引擎在这里实现。</p>
+                        <ul class="feat-list">
+                            <li><b>应用运行框架</b> — 每种应用（Chat / Agent / Workflow）都有自己的生成器 + 执行器</li>
+                            <li><b>工作流引擎</b> — 节点怎么注册、怎么按序执行</li>
+                            <li><b>Agent 引擎</b> — FunctionCall / CoT 等推理策略</li>
+                            <li><b>RAG 管道</b> — 文本分块、向量化、检索、重排序</li>
+                            <li><b>工具系统</b> — 内置 / 自定义 / MCP / 插件四类工具</li>
+                            <li><b>模型管理</b> — 统一调用不同大模型</li>
+                            <li><b>插件系统</b> — 插件安装与调度</li>
+                        </ul>
+                        <p class="layer-hint">📍 关键位置：api/core/</p>
+                    </div>
+                </div>
+
+                <div class="layer-panel">
+                    <div class="card">
+                        <h3>⑤ 数据层 — 档案室</h3>
+                        <p class="desc">相当于"档案室"：所有数据都存在这里，负责存哪里、怎么读、怎么升级表结构。</p>
+                        <ul class="feat-list">
+                            <li><b>业务表</b> — 应用、对话、消息、数据集、账号等</li>
+                            <li><b>工作流表</b> — 工作流定义、运行记录、节点执行记录</li>
+                            <li><b>数据访问层</b> — Repository 封装数据库操作</li>
+                            <li><b>数据库迁移</b> — Alembic 管理表结构升级</li>
+                        </ul>
+                        <p class="layer-hint">📍 关键位置：api/models/、api/repositories/、api/migrations/</p>
+                    </div>
+                </div>
+
+                <div class="layer-panel">
+                    <div class="card">
+                        <h3>⑥ 基础设施 — 后勤仓库</h3>
+                        <p class="desc">相当于"后勤仓库"：存放各种通用工具和后台任务，谁需要谁拿。</p>
+                        <ul class="feat-list">
+                            <li><b>通用工具</b> — 加密、登录鉴权、JWT、分页、邮件发送等</li>
+                            <li><b>集中配置</b> — 系统所有配置项统一管理</li>
+                            <li><b>领域事件</b> — 应用 / 消息 / 数据集等变化的通知</li>
+                            <li><b>异步任务</b> — Celery 定时与后台任务</li>
+                            <li><b>工厂方法</b> — 文件解析、变量构建等复用逻辑</li>
+                        </ul>
+                        <p class="layer-hint">📍 关键位置：api/libs/、api/configs/、api/tasks/</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <h3>🧠 领域核心 core/ 内部划分</h3>
+        <div class="card">
+            <p>core/ 是后端最复杂的目录，按业务领域细分、各自独立演进：</p>
+            <ul class="feat-list">
+                <li><b>core/app</b> — 应用运行框架：generator（生成器）/ runner（执行器）/ queue_manager（Redis 队列），统一支撑聊天、Agent、工作流三类应用</li>
+                <li><b>core/workflow</b> — 工作流引擎：node_factory（节点注册与解析）/ workflow_entry（入口）/ nodes/（20+ 节点实现）/ variable_pool（变量池）</li>
+                <li><b>core/agent</b> — Agent 引擎：FunctionCall / CoT / Plugin 三种策略 runner</li>
+                <li><b>core/rag</b> — RAG 管道：splitter（分块）/ embedding（向量化）/ retrieval（检索）/ rerank（重排序）</li>
+                <li><b>core/tools</b> — 工具系统：内置 / 自定义 / MCP / 插件四类工具统一管理</li>
+                <li><b>core/model_manager</b> — 模型管理：多供应商 LLM 统一接入与调用</li>
+                <li><b>core/plugin</b> — 插件系统：插件安装、调度、与插件守护进程通信</li>
+            </ul>
+        </div>
+
+        <h3>🚦 接入层 controllers/ 四类入口</h3>
+        <div class="card">
+            <table>
+                <thead><tr><th>入口</th><th>路由前缀</th><th>面向对象</th></tr></thead>
+                <tbody>
+                <tr><td>console/</td><td>/console/api/…</td><td>管理台：画布编排、配置、监控</td></tr>
+                <tr><td>web/</td><td>/api/…</td><td>公开 WebApp：聊天、表单、文件上传</td></tr>
+                <tr><td>service_api/</td><td>/v1/…</td><td>BaaS：第三方系统集成调用</td></tr>
+                <tr><td>mcp/</td><td>/mcp/…</td><td>MCP 协议：外部 MCP 客户端接入</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>⚙️ 工作流执行：双线程 + Redis 事件流</h3>
+        <div class="card">
+            <p>一次工作流运行由 <b>两个线程</b> 协作完成，通过 Redis Topic 解耦，前端以 SSE 实时接收事件：</p>
+            <div class="flow">
+                <span class="node">HTTP 入口</span><span class="node arrow">→</span>
+                <span class="node">Service 限流/配额</span><span class="node arrow">→</span>
+                <span class="node">Celery 异步</span><span class="node arrow">→</span>
+                <span class="node">GraphEngine 执行节点</span><span class="node arrow">→</span>
+                <span class="node">Redis 事件流</span><span class="node arrow">→</span>
+                <span class="node">SSE 前端</span>
+            </div>
+            <ul class="feat-list">
+                <li><b>Worker 线程</b> — 真正执行 GraphEngine：拓扑执行节点、变量池传递数据、产出引擎事件，事件先送入<b>进程内内存队列</b></li>
+                <li><b>主线程</b> — 从内存队列读取事件转成 SSE 事件，由 _publish_streaming_response 发布到 <b>Redis Topic</b>；前端再经 retrieve_events 从 Redis 读取渲染</li>
+                <li><b>懒启动</b> — 首个 SSE 订阅者接入时才触发 Celery 任务</li>
+                <li><b>暂停快照</b> — Human Input 节点暂停时序列化整个运行时状态，恢复时反序列化续跑</li>
+                <li><b>中间件层</b> — 持久化 / 限流 / 暂停 / 观测以 Layer 形式横切执行</li>
+            </ul>
+        </div>
+
+        <h3>🛣️ 端到端示例：一次工作流运行（附触发文件路径）</h3>
+        <p class="muted">从前端点击"运行"到 SSE 实时输出，完整链路共 8 站，每一站都标注了触发的真实文件与关键函数。</p>
+
+        <div class="timeline">
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 1 站</span>
+                    <h3>🎯 前端发起请求</h3>
+                    <p class="desc">用户在工作流画布点击"运行"，浏览器向管理台 API 发送 POST 请求。</p>
+                    <ul class="feat-list">
+                        <li><b>触发位置</b> — web/app/（前端画布组件）</li>
+                        <li><b>请求</b> — POST /console/api/apps/{app_id}/workflows/draft/run</li>
+                        <li><b>请求体</b> — {"inputs": {...}, "response_mode": "streaming"}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 2 站</span>
+                    <h3>🚦 Controller 接收</h3>
+                    <p class="desc">DraftWorkflowRunApi.post() 经过 8 层装饰器鉴权后，解析参数并调用服务层。</p>
+                    <ul class="feat-list">
+                        <li><b>触发文件</b> — api/controllers/console/app/workflow.py（L1074 DraftWorkflowRunApi → L1093 post）</li>
+                        <li><b>装饰器链</b> — @setup_required / @login_required / @rbac_permission_required / @with_session / @get_app_model(mode=[WORKFLOW])</li>
+                        <li><b>动作</b> — DraftWorkflowRunPayload 解析 → AppGenerateService.generate(streaming=True)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 3 站</span>
+                    <h3>🔒 Service 限流 + 配额</h3>
+                    <p class="desc">AppGenerateService 先做配额预留和应用级限流，再按 AppMode 分发到不同生成器。</p>
+                    <ul class="feat-list">
+                        <li><b>触发文件</b> — api/services/app_generate_service.py（generate L100 → _run_with_guardrails L128 → _dispatch_generate L160）</li>
+                        <li><b>配额</b> — QuotaService.reserve(QuotaType.WORKFLOW)，超限抛 InvokeRateLimitError</li>
+                        <li><b>限流</b> — RateLimit(app_id).enter()</li>
+                        <li><b>分发</b> — case AppMode.WORKFLOW（L293）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 4 站</span>
+                    <h3>🧵 Celery 异步任务提交</h3>
+                    <p class="desc">Controller 返回 StreamingResponse 后并不会立即启动 Workflow，
+                        而是在客户端成功建立 SSE 订阅后，通过 on_subscribe() 回调将任务提交给 Celery，
+                        实现"先建立流，再开始执行"。</p>
+                    <ul class="feat-list">
+                        <li><b>触发文件</b> — api/services/app_generate_service.py L311-314（on_subscribe → workflow_based_app_execution_task.delay）</li>
+                        <li><b>执行任务</b> — api/tasks/app_generate/workflow_execute_task.py（workflow_based_app_execution_task → _AppRunner.run）</li>
+                        <li><b>运行环境</b> — Celery Worker 调用 _setup_flask_context(user) 重建 Flask 应用上下文，使异步任务能够正常访问 current_app、数据库会话等资源</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 5 站</span>
+                    <h3>🏭 WorkflowAppGenerator 构建</h3>
+                    <p class="desc">解析上传文件、构建应用配置实体，然后启动双线程模型（worker 执行 + 主线程读事件）。</p>
+                    <ul class="feat-list">
+                        <li><b>触发文件</b> — api/core/app/apps/workflow/app_generator.py（generate L150 → WorkflowAppGenerateEntity L214 → _generate L321）</li>
+                        <li><b>实体</b> — application_generate_entity（贯穿全程的核心对象）</li>
+                        <li><b>双线程</b> — worker 线程 _generate_worker L616 + 主线程 _handle_response L701</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 6 站</span>
+                    <h3>🔩 WorkflowAppRunner 组装引擎</h3>
+                    <p class="desc">构建变量池、执行图、命令通道，创建 WorkflowEntry 并挂载中间件层，最大的职责就是把 Workflow Engine 需要的所有运行环境准备好。</p>
+                    <ul class="feat-list">
+                        <li><b>触发文件</b> — api/core/app/apps/workflow/app_runner.py（run L73）</li>
+                        <li><b>变量池</b> — VariablePool + 系统变量 + 用户输入（L109-138）</li>
+                        <li><b>入口</b> — WorkflowEntry 创建（L170-184）</li>
+                        <li><b>中间件</b> — WorkflowPersistenceLayer / PauseStatePersistenceLayer（L186-202）</li>
+                        <li><b>执行</b> — workflow_entry.run()（L204）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 7 站</span>
+                    <h3>⚙️ WorkflowEntry → GraphEngine 执行节点</h3>
+                    <p class="desc">图引擎按拓扑顺序执行节点，变量池传递数据，每个节点产出引擎事件。</p>
+                    <ul class="feat-list">
+                        <li><b>触发文件</b> — api/core/workflow/workflow_entry.py（run L250 → iter_dify_graph_engine_events）</li>
+                        <li><b>引擎</b> — GraphEngine.run() 拓扑执行节点</li>
+                        <li><b>事件</b> — 每个引擎事件交给 _handle_event 分发到进程内事件队列</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="card">
+                    <span class="badge core">第 8 站</span>
+                    <h3>📡 事件回流 → SSE 前端</h3>
+                    <p class="desc">引擎事件先经<b>进程内队列</b>从 worker 线程送到主线程，主线程转成 SSE 事件后由 Celery 任务<b>发布到 Redis Topic</b>，前端经 retrieve_events 读取后实时渲染。</p>
+                    <ul class="feat-list">
+                        <li><b>进程内分发</b> — _handle_event → queue_manager.publish → 进程内内存队列（worker 线程 → 主线程，不经过 Redis）</li>
+                        <li><b>发布到 Redis</b> — Celery 任务 _publish_streaming_response（api/tasks/app_generate/workflow_execute_task.py L405-426）→ topic.publish（channel:{mode}:{workflow_run_id}）</li>
+                        <li><b>读取</b> — api/core/app/apps/message_based_app_generator.py（retrieve_events L316）从 Redis Topic 读取</li>
+                        <li><b>包装</b> — convert_to_event_stream → SSE 事件流</li>
+                        <li><b>前端</b> — 接收 workflow_started → node_started → text_chunk → workflow_finished</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ============ 04. 对比 ============ -->
+    <section>
+        <h2><span class="tag">04</span>Dify vs 本项目：对比分析</h2>
+
+        <h3>📊 能力矩阵</h3>
+        <table>
+            <thead>
+            <tr><th>维度</th><th style="color:var(--accent)">Dify</th><th style="color:var(--good)">本项目 (ai-agent)</th></tr>
+            </thead>
+            <tbody>
+            <tr><td>技术栈</td><td>Python + Flask + Vue 3</td><td>Java 17 + Spring Boot + Spring AI</td></tr>
+            <tr><td>架构模式</td><td>插件化 + 工作流引擎</td><td>DDD 分层 + 策略模式 + 责任链</td></tr>
+            <tr><td>可视化编排</td><td class="good">完整拖拽画布，20+ 节点</td><td class="warn">基础画布 + JSON 存储</td></tr>
+            <tr><td>插件/工具生态</td><td class="good">官方 Marketplace + 社区插件</td><td class="bad">无，工具需硬编码</td></tr>
+            <tr><td>MCP 协议</td><td class="good">v2025-06-18，版本协商 + 动态认证</td><td class="warn">v2024-11-05，基础接入</td></tr>
+            <tr><td>Agent 能力</td><td class="good">沙箱、Skills、多 Agent 协作、持久记忆</td><td class="warn">Auto/Flow 双策略，内存级记忆</td></tr>
+            <tr><td>RAG 知识库</td><td class="good">混合检索、完整生命周期、引用溯源</td><td class="warn">向量检索 only，只增不改</td></tr>
+            <tr><td>人机协同 (HITL)</td><td class="good">审批节点、暂停/恢复、路由决策</td><td class="dim">❌ 无</td></tr>
+            <tr><td>多人协作</td><td class="good">实时协同、光标同步</td><td class="dim">❌ 无</td></tr>
+            <tr><td>触发器 (Trigger)</td><td class="good">定时/事件驱动</td><td class="dim">❌ 仅基础调度</td></tr>
+            <tr><td>鉴权/多租户</td><td class="good">RBAC + 工作空间隔离</td><td class="dim">❌ 全开放</td></tr>
+            <tr><td>调试体验</td><td class="good">可视化调试、持久化变量、Dashboard</td><td class="dim">依赖日志排查</td></tr>
+            <tr><td>部署复杂度</td><td class="warn">多服务（Docker Compose）</td><td class="good">单 Jar，轻量</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ============ 05. 差距分析 ============ -->
+    <section>
+        <h2><span class="tag">05</span>改进方向</h2>
+
+        <div class="card">
+            <h3>🔴 高优先级（P0）</h3>
+            <ul class="feat-list">
+                <li><b>配置热生效</b> — Dify 改完即生效，本项目需重启/手动装配</li>
+                <li><b>工具动态加载</b> — 参考 Plugin System，工具元数据从数据库获取，而非硬编码在代码里</li>
+                <li><b>LLM 输出可靠性</b> — 用 JSON Schema / 结构化输出替代关键词匹配，避免模型升级即失效</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🟡 中优先级（P1）</h3>
+            <ul class="feat-list">
+                <li><b>人机协同 (HITL)</b> — 关键步骤支持暂停 → 人工审核 → 继续，补齐企业场景</li>
+                <li><b>调试可视化</b> — 每个 Step 的输入/输出/Duration 可回放，降低排查成本</li>
+                <li><b>触发器 (Trigger)</b> — 补充定时/事件驱动的任务入口</li>
+                <li><b>知识库治理</b> — 支持文档更新/删除、重向量化，避免"越用越脏"</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🟢 长期演进（P2）</h3>
+            <ul class="feat-list">
+                <li><b>多 Agent 协作</b> — 借鉴 Dify Agent Node，支持多智能体编排</li>
+                <li><b>插件市场雏形</b> — 至少支持工具描述从数据库配置化读取</li>
+                <li><b>协作编辑</b> — 多人同时编辑流程图（技术复杂度高）</li>
+            </ul>
+        </div>
+    </section>
+    <!-- ============ 06. 问题与权衡 ============ -->
+    <section>
+        <h2><span class="tag">06</span>Dify 的问题</h2>
+
+        <div class="card">
+            <h3>⚠️ 主要问题</h3>
+            <ul class="feat-list">
+                <li><b>Agent 自主决策能力有限</b> — Workflow 以预定义流程为主，缺乏复杂任务的动态规划、自主推理和实时决策能力</li>
+                <li><b>多 Agent 协作能力不足</b> — 缺少统一的多智能体调度机制，Agent 之间状态共享、任务协同和通信能力较弱</li>
+                <li><b>大型 Workflow 可维护性差</b> — 节点数量增多后画布复杂度迅速上升，模块复用、版本管理和流程维护成本较高</li>
+                <li><b>调用链层次较深</b> — 一次 Workflow 执行需要经过 Controller → Service → Generator → Runner → Entry → GraphEngine 等多个抽象层，源码阅读成本较高</li>
+                <li><b>异步执行链路复杂</b> — Workflow 执行依赖 SSE、Celery、Redis Pub/Sub 等多种机制协同，调试和问题定位难度较高</li>
+            </ul>
+        </div>
+    </section>
+    <!-- ============ 07. 接口架构总览 ============ -->
+    <section>
+        <h2><span class="tag">07</span>接口架构总览</h2>
+        <p class="muted">从 ext_blueprints.py 的 8 个蓝图出发，到 service 调用的 4 种模式，再到生成型接口的核心流水线。</p>
+
+        <div class="arch">
+            <div class="arch-label first">① 顶层：8 个蓝图（controllers/ 注册）</div>
+            <div class="arch-row">
+                <div class="arch-box admin"><div class="ab-name">console</div><div class="ab-path">/console/api</div><div class="ab-role">后台管理 · 653 接口</div></div>
+                <div class="arch-box user"><div class="ab-name">web</div><div class="ab-path">/api</div><div class="ab-role">最终用户 · 聊天/表单</div></div>
+                <div class="arch-box dev"><div class="ab-name">service_api</div><div class="ab-path">/v1</div><div class="ab-role">开发者 · API Key</div></div>
+                <div class="arch-box dev"><div class="ab-name">openapi</div><div class="ab-path">用户级编程 API</div><div class="ab-role">开发者 · Cookie</div></div>
+                <div class="arch-box aux"><div class="ab-name">files</div><div class="ab-path">/files</div><div class="ab-role">文件存取</div></div>
+                <div class="arch-box aux"><div class="ab-name">inner_api</div><div class="ab-path">/inner/api</div><div class="ab-role">内部服务调用</div></div>
+                <div class="arch-box aux"><div class="ab-name">mcp</div><div class="ab-path">/mcp</div><div class="ab-role">MCP 协议</div></div>
+                <div class="arch-box aux"><div class="ab-name">trigger</div><div class="ab-path">/triggers</div><div class="ab-role">Webhook 触发</div></div>
+            </div>
+
+            <div class="arch-arrow">▼<span class="t">请求进入后按 4 种模式调用 service</span></div>
+
+            <div class="arch-label">② service 调用 4 种模式</div>
+            <div class="arch-row">
+                <div class="arch-box"><div class="ab-name">生成型</div><div class="ab-role">chat / completion /<br>workflow run</div></div>
+                <div class="arch-box"><div class="ab-name">CRUD 型</div><div class="ab-role">后台管理<br>增删改查</div></div>
+                <div class="arch-box"><div class="ab-name">查询型</div><div class="ab-role">parameters / meta<br>列表查询</div></div>
+                <div class="arch-box"><div class="ab-name">文件/认证型</div><div class="ab-role">上传 / passport<br>login</div></div>
+            </div>
+
+            <div class="arch-arrow">▼<span class="t">生成型接口完整流水线（web / console / service_api 共用同一底层）</span></div>
+
+            <div class="arch-label">③ 生成型核心链路</div>
+            <div class="gen-flow">
+                <div class="gstep"><span class="n">1</span><span class="t">类型检查</span><span class="d">app_mode 是否匹配</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">2</span><span class="t">Payload 校验</span><span class="d">Pydantic model_validate</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep hl"><span class="n">3</span><span class="t">AppGenerateService.generate</span><span class="d">统一入口</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">4</span><span class="t">护栏层</span><span class="d">配额预留 + 限流</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">5</span><span class="t">策略分发</span><span class="d">match app_mode</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">6</span><span class="t">具体 Generator</span><span class="d">Chat / Workflow / Agent</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">7</span><span class="t">响应包装</span><span class="d">JSON / SSE 流式</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">8</span><span class="t">异常翻译</span><span class="d">业务异常 → HTTP 码</span></div>
+            </div>
+
+            <p class="arch-note">💡 鉴权差异：web=Passport JWT（注入 end_user）｜console=login_required（注入 current_user）｜service_api=API Key。三个蓝图都只是同一底层 AppGenerateService 的不同"门面"。</p>
+        </div>
+    </section>
+    <!-- ============ 08. 全景大图：一次请求的完整旅程 ============ -->
+    <section>
+        <h2><span class="tag">08</span>全景大图：一次请求的完整旅程</h2>
+        <p class="muted">从 8 个蓝图到 LLM 的完整纵向地图。①→⑥ 自顶向下，7 个代表接口已全部走通（绿色标记）。</p>
+
+        <div class="arch-wide">
+
+            <div class="arch-sec"><span class="num">①</span><span class="t">请求入口：8 个蓝图</span><span class="d">controllers/ 注册 · 共 840 个路由</span></div>
+            <div class="arch-row">
+                <div class="arch-box admin"><div class="ab-name">console</div><div class="ab-path">/console/api</div><div class="ab-role">后台管理 · 653</div></div>
+                <div class="arch-box user"><div class="ab-name">web</div><div class="ab-path">/api</div><div class="ab-role">最终用户 · 40</div></div>
+                <div class="arch-box dev"><div class="ab-name">service_api</div><div class="ab-path">/v1</div><div class="ab-role">开发者 · 68</div></div>
+                <div class="arch-box dev"><div class="ab-name">openapi</div><div class="ab-path">编程 API</div><div class="ab-role">开发者 · 34</div></div>
+                <div class="arch-box aux"><div class="ab-name">inner_api</div><div class="ab-path">/inner/api</div><div class="ab-role">内部 · 35</div></div>
+                <div class="arch-box aux"><div class="ab-name">files</div><div class="ab-path">/files</div><div class="ab-role">文件 · 6</div></div>
+                <div class="arch-box aux"><div class="ab-name">trigger</div><div class="ab-path">/triggers</div><div class="ab-role">Webhook · 3</div></div>
+                <div class="arch-box aux"><div class="ab-name">mcp</div><div class="ab-path">/mcp</div><div class="ab-role">协议 · 1</div></div>
+            </div>
+
+            <div class="arch-big-arrow">▼</div>
+            <div class="arch-sec"><span class="num">②</span><span class="t">鉴权层：3 种方式</span><span class="d">方法装饰器注入用户上下文</span></div>
+            <div class="arch-row">
+                <div class="arch-box"><div class="ab-name">web · Passport JWT</div><div class="ab-role">Cookie 令牌验签<br>注入 end_user</div></div>
+                <div class="arch-box"><div class="ab-name">console · 登录会话</div><div class="ab-role">8 层装饰器链<br>注入 current_user / tenant</div></div>
+                <div class="arch-box"><div class="ab-name">service_api · API Key</div><div class="ab-role">Bearer 令牌 + Redis 缓存<br>注入 app_model / end_user</div></div>
+            </div>
+
+            <div class="arch-big-arrow">▼</div>
+            <div class="arch-sec"><span class="num">③</span><span class="t">Service 调用：4 种模式</span><span class="d">services/ 层按需分发</span></div>
+            <div class="arch-row">
+                <div class="arch-box"><div class="ab-name">生成型</div><div class="ab-role">chat / completion<br>workflow run</div></div>
+                <div class="arch-box"><div class="ab-name">CRUD 型</div><div class="ab-role">后台管理<br>增删改查</div></div>
+                <div class="arch-box"><div class="ab-name">查询型</div><div class="ab-role">parameters / meta<br>列表分页</div></div>
+                <div class="arch-box"><div class="ab-name">文件/认证型</div><div class="ab-role">上传 / passport<br>login</div></div>
+            </div>
+
+            <div class="arch-big-arrow">▼</div>
+            <div class="arch-sec"><span class="num">④</span><span class="t">生成型流水线</span><span class="d">web / console / service_api 共用同一底层</span></div>
+            <div class="gen-flow">
+                <div class="gstep"><span class="n">1</span><span class="t">类型检查</span><span class="d">app_mode 匹配</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">2</span><span class="t">Payload 校验</span><span class="d">Pydantic</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep hl"><span class="n">3</span><span class="t">AppGenerateService.generate</span><span class="d">统一总闸</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">4</span><span class="t">护栏层</span><span class="d">配额 + 限流</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">5</span><span class="t">策略分发</span><span class="d">match app_mode</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">6</span><span class="t">Generator 编排</span><span class="d">worker 线程</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">7</span><span class="t">Runner 执行</span><span class="d">拼 Prompt / RAG / 调 LLM</span></div>
+                <span class="garrow">→</span>
+                <div class="gstep"><span class="n">8</span><span class="t">响应回流</span><span class="d">队列 → SSE/JSON</span></div>
+            </div>
+
+            <div class="arch-big-arrow">▼</div>
+            <div class="arch-sec"><span class="num">⑤</span><span class="t">core 引擎</span><span class="d">core/ 按领域划分，按需进入</span></div>
+            <div class="arch-row">
+                <div class="arch-box"><div class="ab-name">app</div><div class="ab-role">应用运行框架<br>6 种 Generator</div></div>
+                <div class="arch-box"><div class="ab-name">workflow</div><div class="ab-role">图引擎<br>拓扑执行</div></div>
+                <div class="arch-box"><div class="ab-name">agent</div><div class="ab-role">推理策略<br>FC / CoT</div></div>
+                <div class="arch-box"><div class="ab-name">rag</div><div class="ab-role">知识库管道<br>检索 / 重排</div></div>
+                <div class="arch-box"><div class="ab-name">model_manager</div><div class="ab-role">LLM 统一接入<br>ModelInstance</div></div>
+                <div class="arch-box"><div class="ab-name">tools</div><div class="ab-role">工具系统</div></div>
+                <div class="arch-box"><div class="ab-name">plugin</div><div class="ab-role">插件系统</div></div>
+            </div>
+
+            <div class="arch-big-arrow">▼</div>
+            <div class="arch-sec"><span class="num">⑥</span><span class="t">数据层 + 外部</span><span class="d">持久化与出站边界</span></div>
+            <div class="arch-row">
+                <div class="arch-box"><div class="ab-name">models</div><div class="ab-role">App / Workflow<br>Message / Dataset</div></div>
+                <div class="arch-box"><div class="ab-name">repositories</div><div class="ab-role">数据访问</div></div>
+                <div class="arch-box"><div class="ab-name">migrations</div><div class="ab-role">Alembic 迁移</div></div>
+                <div class="arch-box"><div class="ab-name">LLM API</div><div class="ab-role">OpenAI / Claude…</div></div>
+                <div class="arch-box"><div class="ab-name">插件 daemon</div><div class="ab-role">工具 / 模型插件</div></div>
+                <div class="arch-box"><div class="ab-name">对象存储</div><div class="ab-role">S3 / OSS 抽象</div></div>
+            </div>
+
+            <div class="arch-sec"><span class="num">★</span><span class="t">7 个代表接口（已全部走通）</span><span class="d">每个模式选 1 个代表，看懂 = 看懂同类全部</span></div>
+            <div>
+                <span class="api-chip done">① POST /api/chat-messages <span class="m">生成型·web</span></span>
+                <span class="api-chip done">② GET /api/passport <span class="m">认证·web</span></span>
+                <span class="api-chip done">③ GET /api/parameters <span class="m">查询·web</span></span>
+                <span class="api-chip done">④ GET /console/api/apps <span class="m">CRUD·console</span></span>
+                <span class="api-chip done">⑤ POST /v1/chat-messages <span class="m">API Key·service_api</span></span>
+                <span class="api-chip done">⑥ POST …/workflows/draft/run <span class="m">工作流·console</span></span>
+                <span class="api-chip done">⑦ POST /api/files/upload <span class="m">文件·web</span></span>
+            </div>
+
+            <p class="arch-note">💡 阅读口诀：一闸（AppGenerateService）· 三鉴权 · 四模式 · 双线程 · 七接口。记住这 5 个数字，整个 Dify 后端的地图就在脑子里了。</p>
+        </div>
+    </section>
+</main>
+
+<!-- 层详情弹窗 -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <button class="modal-close" type="button" id="modalClose" aria-label="关闭">×</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+/* 逻辑架构七层详情数据 */
+var LAYERS = {
+    1: {
+        name: 'Interface Layer（交互层）',
+        sub: '最外层，所有请求进入 Dify 的入口',
+        intro: '这是最外层，也是所有请求进入 Dify 的入口。负责接收、鉴权并转发用户的每一次操作。',
+        includes: ['Web 页面', 'Chat 页面', 'API', 'SDK', 'Chat Widget', 'OpenAPI'],
+        example: '浏览器\n    │\nPOST /chat-messages\n    │\nFlask API\n    │\n进入 Dify',
+        source: ['api/controllers/', 'web/']
+    },
+    2: {
+        name: 'Application Layer（应用层）',
+        sub: '定义 AI 应用的"长相"与配置',
+        intro: '这一层定义 Dify 中每一个 AI 应用是什么：Chat、Workflow、Agent、Completion、Advanced Chat。应用的类型、模型、提示词、变量、对话设置都在此定义。',
+        includes: ['AppMode（CHAT / WORKFLOW / AGENT_CHAT / ADVANCED_CHAT）', 'AppConfig 应用配置', '输入变量定义', '模型与提示词配置', '对话 / 文件开关'],
+        example: '创建 Chat 应用\n    │\n配置模型 + 提示词\n    │\n保存到 App 表（AppMode=CHAT）\n    │\nAppGenerateService 按模式分发',
+        source: ['core/app/apps/', 'models/model.py（App、AppMode）']
+    },
+    3: {
+        name: 'Orchestration Layer（编排层）',
+        sub: '流程控制与节点调度，Dify 的执行核心',
+        intro: '这是 Dify 的执行核心。负责把工作流按拓扑顺序调度执行：节点如何串行/并行、变量如何传递、事件如何产出并推送。',
+        includes: ['GraphEngine 图引擎', 'WorkflowEntry 执行入口', '节点执行（LLM / 代码 / 条件 / 循环 / 知识检索）', 'VariablePool 变量池', '双线程 + Redis 事件流', '暂停 / 恢复（Human Input）'],
+        example: 'WorkflowEntry.run()\n    │\nGraphEngine 拓扑排序\n    │\n逐节点执行 → 变量池传递\n    │\n事件发布 Redis → SSE 推送前端',
+        source: ['core/workflow/', 'core/app/apps/base_app_queue_manager.py']
+    },
+    4: {
+        name: 'AI Capability Layer（AI 能力层）',
+        sub: '提供 Prompt、记忆、RAG、Agent、工具等智能能力',
+        intro: '这一层是 Dify 的"智能弹药库"，为编排层提供可复用的 AI 能力模块。',
+        includes: ['Prompt 提示词模板', 'Memory 对话记忆', 'RAG 知识检索', 'Agent 策略（FunctionCall / CoT）', 'Tool 工具引擎', 'Moderation 内容审核'],
+        example: 'Agent 推理\n    │\n需要查资料 → ToolEngine 调工具\n    │\nRAG 检索知识库\n    │\n结果回填 → LLM 生成回答',
+        source: ['core/prompt/', 'core/memory/', 'core/rag/', 'core/agent/', 'core/tools/']
+    },
+    5: {
+        name: 'Model Access Layer（模型接入层）',
+        sub: '统一封装不同大模型的调用接口',
+        intro: '屏蔽各模型供应商（OpenAI、Claude、Gemini、本地模型）的差异，用统一接口调用任意模型。',
+        includes: ['ModelInstance 模型实例', '模型配置与凭证', '供应商管理', '配额与限流', '流式 / 阻塞两种响应'],
+        example: '应用配置 GPT-4o\n    │\nModelInstance.invoke()\n    │\n统一请求格式\n    │\n流式返回 token',
+        source: ['core/model_manager.py（ModelInstance）', 'providers/']
+    },
+    6: {
+        name: 'Infrastructure Layer（基础设施层）',
+        sub: '数据库、缓存、向量库、任务队列、Sandbox 等运行支撑',
+        intro: '为上层提供稳定的运行底座：数据持久化、缓存加速、异步任务、向量检索、代码沙箱。',
+        includes: ['PostgreSQL 业务数据', 'Redis 缓存 + 事件流', 'Celery 异步任务', '向量数据库（Milvus 等）', '对象存储', 'Sandbox 代码沙箱'],
+        example: '消息 / 会话 → PostgreSQL\n事件流 / 缓存 → Redis\n异步执行 → Celery\n代码节点 → Sandbox',
+        source: ['extensions/', 'tasks/', 'docker/']
+    },
+    7: {
+        name: 'External Service Layer（外部服务层）',
+        sub: '连接大模型与第三方系统，实现外部生态集成',
+        intro: 'Dify 与外部世界交互的边界：调用大模型 API、对接第三方工具、通过 MCP 协议接入外部服务。',
+        includes: ['LLM API（OpenAI / Claude / Gemini）', 'MCP 协议', '插件守护进程', 'Webhook 回调', 'SSRF 安全代理'],
+        example: '出站请求 → SSRF 代理\n    │\nLLM API / 工具 Webhook\n    │\nMCP Server 对接\n    │\n结果返回 Dify',
+        source: ['core/helper/ssrf_proxy.py', 'controllers/mcp/', '插件系统']
+    }
+};
+
+(function () {
+    var overlay = document.getElementById('modalOverlay');
+    var content = document.getElementById('modalContent');
+
+    function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function openLayer(id) {
+        var d = LAYERS[id];
+        if (!d) return;
+        var html = '<h3>' + esc(d.name) + '</h3><p class="m-sub">' + esc(d.sub) + '</p>';
+        html += '<div class="m-sec">📖 简介</div><p>' + esc(d.intro) + '</p>';
+        html += '<div class="m-sec">📦 包括</div><ul>' + d.includes.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+        html += '<div class="m-sec">🔁 示例流程</div><div class="m-code">' + esc(d.example) + '</div>';
+        html += '<div class="m-sec">📍 源码位置</div><ul>' + d.source.map(function (x) { return '<li><b>' + esc(x) + '</b></li>'; }).join('') + '</ul>';
+        content.innerHTML = html;
+        overlay.classList.add('open');
+    }
+
+    function closeLayer() {
+        overlay.classList.remove('open');
+    }
+
+    var buttons = document.querySelectorAll('.detail-btn');
+    for (var i = 0; i < buttons.length; i++) {
+        (function (btn) {
+            btn.addEventListener('click', function () { openLayer(btn.getAttribute('data-layer')); });
+        })(buttons[i]);
+    }
+
+    document.getElementById('modalClose').addEventListener('click', closeLayer);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeLayer(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLayer(); });
+})();
+</script>
+
+<script>
+(function () {
+    var browser = document.getElementById('layerBrowser');
+    if (!browser) return;
+    var tabs = browser.querySelectorAll('.layer-tab');
+    var panels = browser.querySelectorAll('.layer-panel');
+    var current = 0;
+
+    function show(i) {
+        current = (i + tabs.length) % tabs.length;
+        for (var idx = 0; idx < tabs.length; idx++) {
+            tabs[idx].classList.toggle('active', idx === current);
+            panels[idx].classList.toggle('active', idx === current);
+        }
+    }
+
+    for (var i = 0; i < tabs.length; i++) {
+        (function (idx) {
+            tabs[idx].addEventListener('click', function () { show(idx); });
+        })(i);
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') show(current - 1);
+        if (e.key === 'ArrowRight') show(current + 1);
+    });
+})();
+</script>
+</body>
+</html>
